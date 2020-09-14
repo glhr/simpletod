@@ -65,7 +65,7 @@ This section explains steps to preprocess MultiWOZ dataset and training the mode
 
 ### Preprocessing: 
 It includes downloading MultiWOZ dataset, performing delexicaliztion, and creating dataset for language model
-```
+```bash
 create_dataset.sh
 ```
 Each dialogue turn will be represented as a sequence, which contains previous user/system turns, belief, action, and delexicalized response
@@ -81,8 +81,9 @@ Each dialogue turn will be represented as a sequence, which contains previous us
 ### DST training: 
 training the model for predicting belief states.   
  
-```
+```bash
 train_dst.sh $GPU gpt2 $GPT2_TYPE $BATCH
+# eg. ./train_dst.sh 0 gpt2 distilgpt2 1
 ```
 
 For this task, we include ```none``` slot values in the sequence. 
@@ -96,7 +97,7 @@ We observed that this will improve SimpleTOD performance on DST by reducing fals
 ### End-to-End training:
 In this step, we train SimpleTOD on the sequence of context+belief+action+delex response. 
 Compared to DST task, we do not include ```none``` slot values, because of the sequence length limitaiton od GPT2. 
-```
+```bash
 train_end2end.sh $GPU gpt2 $GPT2_TYPE $BATCH
 ```
 
@@ -106,7 +107,7 @@ train_end2end.sh $GPU gpt2 $GPT2_TYPE $BATCH
 This script will generate SimpeTOD belief/action/responses. 
 Generation is based on each dialogue, where it create context for each turn and save the generated belief, action, and responses for the dialogue.
 
-```
+```bash
 CUDA_VISIBLE_DEVICES=$GPU python generate_dialogue.py $CHECKPOINT $DECODING
 ```
 It will save the model output in a json file ```MODEL_OUTPUT``` which contains all dialogues with groundtruth user and system responses as well.
@@ -121,7 +122,7 @@ MultiWOZ evaluation contains two part, Dialogue State Tracking (DST) and End-to-
 
 In order to compute joint accuracy, simply run the following script using the generated
 ```MODEL_OUTPUT``` file. it will use the generated belief states to compute the metric. It will compute joint accuracy without any label cleaning.
-```
+```bash
 python compute_joint_acc.py $MODEL_OUTPUT 
 ```
 There are two types of label cleaning that can be used to compute joint accuracy. 
@@ -133,7 +134,7 @@ There are two types of label cleaning that can be used to compute joint accuracy
 #### End-to-End evaluation
 
 In order to compute inform/success/BLEU, simply run the following script. It will load generated belief states and responses, and computes the metrics. 
-```
+```bash
 python evaluate_multiwoz.py $MODEL_OUTPUT
 ```
 
@@ -141,7 +142,7 @@ python evaluate_multiwoz.py $MODEL_OUTPUT
 
 In order to test the model in real conversation with human, we have provided a simple script where user can input text in a multi turn setting, and see the responses from SimpleTOD. 
 It will generate lexicalized responses and belief states at each turn. For more information, please read the blog.  
-```
+```bash
 python demo.py $CHECKPOINT $DECODING
 ```
 
